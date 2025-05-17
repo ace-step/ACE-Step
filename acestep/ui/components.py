@@ -174,6 +174,15 @@ def create_text2music_ui(
                             scale=9,
                         )
 
+                    with gr.Row():
+                            negative_prompt = gr.Textbox(
+                                lines=1,
+                                label="Negative Tags",
+                                info="Elements you want to avoid in the generated music (only effective when no EFG is used)",
+                                max_lines=4,
+                                scale=9,
+                            )
+
             # Add the change event for the preset dropdown
             genre_preset.change(
                 fn=update_tags_from_preset,
@@ -949,6 +958,7 @@ def create_text2music_ui(
             format,
             audio_duration,
             prompt,
+            negative_prompt,
             lyrics,
             infer_step,
             guidance_scale,

@@ -1027,6 +1027,8 @@ class ACEStepPipeline:
         min_guidance_scale=3.0,
         oss_steps=[],
         encoder_text_hidden_states_null=None,
+        neg_encoder_text_hidden_states=None,  
+        neg_text_attention_mask=None,      
         use_erg_lyric=False,
         use_erg_diffusion=False,
         retake_random_generators=None,
@@ -1323,14 +1325,24 @@ class ACEStepPipeline:
                 },
             )
         else:
-            # P(null_speaker, null_text, null_lyric)
-            encoder_hidden_states_null, _ = self.ace_step_transformer.encode(
-                torch.zeros_like(encoder_text_hidden_states),
-                text_attention_mask,
-                torch.zeros_like(speaker_embds),
-                torch.zeros_like(lyric_token_ids),
-                lyric_mask,
-            )
+            # Using negative prompt for unconditional guidance
+            if neg_encoder_text_hidden_states is not None:
+                encoder_hidden_states_null, _ = self.ace_step_transformer.encode(
+                    neg_encoder_text_hidden_states,  # Already padded to match
+                    neg_text_attention_mask,         # Already padded to match
+                    torch.zeros_like(speaker_embds),
+                    torch.zeros_like(lyric_token_ids),
+                    lyric_mask,
+                )
+            else:
+                # Original approach with zeros
+                encoder_hidden_states_null, _ = self.ace_step_transformer.encode(
+                    torch.zeros_like(encoder_text_hidden_states),
+                    text_attention_mask,
+                    torch.zeros_like(speaker_embds),
+                    torch.zeros_like(lyric_token_ids),
+                    lyric_mask,
+                )
 
         encoder_hidden_states_no_lyric = None
         if do_double_condition_guidance:
@@ -1631,6 +1643,7 @@ class ACEStepPipeline:
         format: str = "wav",
         audio_duration: float = 60.0,
         prompt: str = None,
+        negative_prompt: str = None,
         lyrics: str = None,
         infer_step: int = 60,
         guidance_scale: float = 15.0,
@@ -1701,6 +1714,40 @@ class ACEStepPipeline:
         )
         encoder_text_hidden_states = encoder_text_hidden_states.repeat(batch_size, 1, 1)
         text_attention_mask = text_attention_mask.repeat(batch_size, 1)
+
+        if negative_prompt:
+            neg_texts = [negative_prompt]
+            neg_encoder_text_hidden_states, neg_text_attention_mask = self.get_text_embeddings(
+                neg_texts, self.device
+            )
+            neg_encoder_text_hidden_states = neg_encoder_text_hidden_states.repeat(batch_size, 1, 1)
+            neg_text_attention_mask = neg_text_attention_mask.repeat(batch_size, 1)
+            
+            # Determine which is longer and pad the shorter one
+            pos_seq_len = encoder_text_hidden_states.shape[1]
+            neg_seq_len = neg_encoder_text_hidden_states.shape[1]
+            
+            if pos_seq_len > neg_seq_len:
+                # Pad negative embeddings
+                pad_size = pos_seq_len - neg_seq_len
+                neg_encoder_text_hidden_states = torch.nn.functional.pad(
+                    neg_encoder_text_hidden_states, (0, 0, 0, pad_size), "constant", 0
+                )
+                neg_text_attention_mask = torch.nn.functional.pad(
+                    neg_text_attention_mask, (0, pad_size), "constant", 0
+                )
+            elif neg_seq_len > pos_seq_len:
+                # Pad positive embeddings
+                pad_size = neg_seq_len - pos_seq_len
+                encoder_text_hidden_states = torch.nn.functional.pad(
+                    encoder_text_hidden_states, (0, 0, 0, pad_size), "constant", 0
+                )
+                text_attention_mask = torch.nn.functional.pad(
+                    text_attention_mask, (0, pad_size), "constant", 0
+                )
+        else:
+            neg_encoder_text_hidden_states = None
+            neg_text_attention_mask = None
 
         encoder_text_hidden_states_null = None
         if use_erg_tag:
@@ -1843,7 +1890,9 @@ class ACEStepPipeline:
                 guidance_interval_decay=guidance_interval_decay,
                 min_guidance_scale=min_guidance_scale,
                 oss_steps=oss_steps,
-                encoder_text_hidden_states_null=encoder_text_hidden_states_null,
+                encoder_text_hidden_states_null=encoder_text_hidden_states_null,   
+                neg_encoder_text_hidden_states=neg_encoder_text_hidden_states if negative_prompt else None,
+                neg_text_attention_mask=neg_text_attention_mask if negative_prompt else None,
                 use_erg_lyric=use_erg_lyric,
                 use_erg_diffusion=use_erg_diffusion,
                 retake_random_generators=retake_random_generators,
@@ -1883,6 +1932,7 @@ class ACEStepPipeline:
             "lora_name_or_path": lora_name_or_path,
             "task": task,
             "prompt": prompt if task != "edit" else edit_target_prompt,
+            "negative_prompt": negative_prompt,
             "lyrics": lyrics if task != "edit" else edit_target_lyrics,
             "audio_duration": audio_duration,
             "infer_step": infer_step,
