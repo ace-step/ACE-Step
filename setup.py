@@ -24,4 +24,11 @@ setup(
     package_data={
         "acestep.models.lyrics_utils": ["vocab.json"],  # Specify the relative path to vocab.json
     },
+    extras_require={
+        "train": [
+            "peft",
+            "tensorboard",
+            "tensorboardX"
+        ]
+    },
 )
