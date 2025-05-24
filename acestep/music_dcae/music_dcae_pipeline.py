@@ -118,6 +118,7 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
         pred_wavs = []
 
         for latent in latents:
+            latent = latent.to(self.device)
             mels = self.dcae.decoder(latent.unsqueeze(0))
             mels = mels * 0.5 + 0.5
             mels = mels * (self.max_mel_value - self.min_mel_value) + self.min_mel_value

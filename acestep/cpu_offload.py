@@ -19,7 +19,7 @@ class CpuOffloader:
             self.model.to("cpu")
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
 
 
 T = TypeVar('T')
@@ -31,8 +31,8 @@ def cpu_offload(model_attr: str):
             if not self.cpu_offload:
                 return func(self, *args, **kwargs)
 
-            # Get the device from the class
-            device = self.device
+            # Get the device from the class device map
+            device = getattr(self, "device_map", {}).get(model_attr, self.device)
             # Get the model from the class attribute
             model = getattr(self, model_attr)
             
