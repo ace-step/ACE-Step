@@ -418,8 +418,8 @@ class ACEStepTransformer2DModel(
         encoder_hidden_states: torch.Tensor,
         encoder_hidden_mask: torch.Tensor,
         timestep: Optional[torch.Tensor],
-        ssl_hidden_states: Optional[List[torch.Tensor]] = None,
         output_length: int = 0,
+        ssl_hidden_states: Optional[List[torch.Tensor]] = None,
         block_controlnet_hidden_states: Optional[
             Union[List[torch.Tensor], torch.Tensor]
         ] = None,
@@ -558,8 +558,8 @@ class ACEStepTransformer2DModel(
             encoder_hidden_states=encoder_hidden_states,
             encoder_hidden_mask=encoder_hidden_mask,
             timestep=timestep,
-            ssl_hidden_states=ssl_hidden_states,
             output_length=output_length,
+            ssl_hidden_states=ssl_hidden_states,
             block_controlnet_hidden_states=block_controlnet_hidden_states,
             controlnet_scale=controlnet_scale,
             return_dict=return_dict,

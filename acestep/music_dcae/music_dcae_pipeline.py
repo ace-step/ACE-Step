@@ -31,9 +31,9 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
     @register_to_config
     def __init__(
         self,
-        source_sample_rate=None,
         dcae_checkpoint_path=DEFAULT_PRETRAINED_PATH,
         vocoder_checkpoint_path=VOCODER_PRETRAINED_PATH,
+        source_sample_rate=None,
     ):
         super(MusicDCAE, self).__init__()
 
