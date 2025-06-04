@@ -1469,7 +1469,11 @@ class ACEStepPipeline:
         save_path: str = None,
         batch_size: int = 1,
         debug: bool = False,
+        actual_seeds: list = None,
+        **kwargs,
     ):
+        if actual_seeds is not None:
+            manual_seeds = actual_seeds # decent middle ground fix
 
         start_time = time.time()
 

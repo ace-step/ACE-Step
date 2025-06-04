@@ -13,7 +13,7 @@ class ACEStepInput(BaseModel):
     bf16: bool = True
     torch_compile: bool = False
     device_id: int = 0
-    output_path: Optional[str] = None
+    save_path: Optional[str] = None
     audio_duration: float
     prompt: str
     lyrics: str
@@ -22,7 +22,7 @@ class ACEStepInput(BaseModel):
     scheduler_type: str
     cfg_type: str
     omega_scale: float
-    actual_seeds: List[int]
+    manual_seeds: List[int]
     guidance_interval: float
     guidance_interval_decay: float
     min_guidance_scale: float
@@ -58,35 +58,12 @@ async def generate_audio(input_data: ACEStepInput):
         )
 
         # Prepare parameters
-        params = (
-            input_data.audio_duration,
-            input_data.prompt,
-            input_data.lyrics,
-            input_data.infer_step,
-            input_data.guidance_scale,
-            input_data.scheduler_type,
-            input_data.cfg_type,
-            input_data.omega_scale,
-            ", ".join(map(str, input_data.actual_seeds)),
-            input_data.guidance_interval,
-            input_data.guidance_interval_decay,
-            input_data.min_guidance_scale,
-            input_data.use_erg_tag,
-            input_data.use_erg_lyric,
-            input_data.use_erg_diffusion,
-            ", ".join(map(str, input_data.oss_steps)),
-            input_data.guidance_scale_text,
-            input_data.guidance_scale_lyric,
-        )
 
         # Generate output path if not provided
-        output_path = input_data.output_path or f"output_{uuid.uuid4().hex}.wav"
+        input_data.save_path = input_data.save_path or f"output_{uuid.uuid4().hex}.wav"
 
         # Run pipeline
-        model_demo(
-            *params,
-            save_path=output_path
-        )
+        model_demo(**input_data)
 
         return ACEStepOutput(
             status="success",
