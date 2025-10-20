@@ -11,12 +11,13 @@ soundfile==0.13.1
 torch
 torchaudio
 torchvision
+torchcodec
 tqdm
 transformers==4.50.0
 py3langid==0.3.0
 hangul-romanize==0.1.0
 num2words==0.5.14
-spacy==3.8.4
+spacy==3.8.7
 accelerate==1.6.0
 cutlet
 fugashi[unidic-lite]

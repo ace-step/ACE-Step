@@ -195,7 +195,7 @@ cd ACE-Step
 ### 2. Prerequisites
 Ensure you have the following installed:
 
-* `Python`: Version 3.10 or later is recommended. You can download it from [python.org](https://www.python.org/).
+* `Python`: Versions 3.10 through 3.13 are supported. You can download installers from [python.org](https://www.python.org/) or your package manager.
 * `Conda` or `venv`: For creating a virtual environment (Conda is recommended).
 
 ### 3. Set Up a Virtual Environment
@@ -204,9 +204,9 @@ It is highly recommended to use a virtual environment to manage project dependen
 
 #### Option A: Using Conda
 
-1.  **Create the environment** named `ace_step` with Python 3.10:
+1.  **Create the environment** named `ace_step` with Python 3.13 (feel free to substitute 3.10–3.12 as needed):
     ```bash
-    conda create -n ace_step python=3.10 -y
+    conda create -n ace_step python=3.13 -y
     ```
 
 2.  **Activate the environment:**
@@ -246,6 +246,8 @@ Once your virtual environment is activated:
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 ```
 (Adjust cu126 if you have a different CUDA version. For other PyTorch installation options, refer to the [official PyTorch website](https://pytorch.org/get-started/locally/)).
+
+> **Python 3.13 note:** Official CUDA wheels roll out gradually. If you do not see Python 3.13 builds yet, use the PyTorch selector to grab a nightly wheel (e.g., replace the URL above with `.../whl/nightly/cu126`) or build from source following the [PyTorch instructions](https://pytorch.org/get-started/locally/).
 
 **b.** Install ACE-Step and its core dependencies:
 ```bash

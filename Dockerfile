@@ -8,18 +8,24 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive
 
 # Install Python and system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.10 \
-    python3-pip \
-    python3-venv \
-    python3-dev \
-    build-essential \
-    git \
-    curl \
-    wget \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/python3 /usr/bin/python
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        python3.13 \
+        python3.13-venv \
+        python3.13-dev \
+        python3.13-distutils \
+        build-essential \
+        git \
+        curl \
+        wget && \
+    python3.13 -m ensurepip --upgrade && \
+    python3.13 -m pip install --no-cache-dir --upgrade pip && \
+    ln -sf /usr/bin/python3.13 /usr/bin/python3 && \
+    ln -sf /usr/bin/python3.13 /usr/bin/python && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create and activate virtual environment
 RUN python -m venv /opt/venv
@@ -35,10 +41,10 @@ WORKDIR /app
 RUN git clone https://github.com/ace-step/ACE-Step.git .
 
 # Install specific PyTorch version compatible with CUDA 12.6
-RUN pip3 install --no-cache-dir --upgrade pip && \
-    pip3 install --no-cache-dir hf_transfer peft && \
-    pip3 install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126
-RUN pip3 install --no-cache-dir .
+RUN python -m pip install --no-cache-dir --upgrade pip && \
+    python -m pip install --no-cache-dir hf_transfer peft && \
+    python -m pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126
+RUN python -m pip install --no-cache-dir .
 
 # Ensure target directories for volumes exist and have correct initial ownership
 RUN mkdir -p /app/outputs /app/checkpoints /app/logs && \

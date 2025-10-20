@@ -30,7 +30,24 @@ from acestep.pipeline_ace_step import ACEStepPipeline
 
 matplotlib.use("Agg")
 torch.backends.cudnn.benchmark = False
-torch.set_float32_matmul_precision("high")
+try:
+    if hasattr(torch.backends.cuda, "matmul") and hasattr(
+        torch.backends.cuda.matmul, "fp32_precision"
+    ):
+        torch.backends.cuda.matmul.fp32_precision = "tf32"
+    else:
+        raise AttributeError
+    if hasattr(torch.backends.cudnn, "conv") and hasattr(
+        torch.backends.cudnn.conv, "fp32_precision"
+    ):
+        torch.backends.cudnn.conv.fp32_precision = "tf32"
+except AttributeError:
+    if torch.cuda.is_available() and hasattr(torch.backends.cuda, "matmul") and hasattr(
+        torch.backends.cuda.matmul, "allow_tf32"
+    ):
+        torch.backends.cuda.matmul.allow_tf32 = True
+    if torch.cuda.is_available() and hasattr(torch.backends.cudnn, "allow_tf32"):
+        torch.backends.cudnn.allow_tf32 = True
 
 
 class Pipeline(LightningModule):

@@ -1,5 +1,10 @@
 # Training Instruction
 
+## Environment Prerequisites
+- Python 3.10–3.13 is supported; the trainer has been smoke-tested with Python 3.13.
+- Install project dependencies inside a virtual environment (`conda create -n ace_step python=3.13` or `python3.13 -m venv venv`).
+- Follow the [PyTorch selector](https://pytorch.org/get-started/locally/) for CUDA builds. When Python 3.13 wheels are still rolling out, use the nightly channel or source build instructions provided there.
+
 ## 1. Data Preparation
 
 ### Required File Format
