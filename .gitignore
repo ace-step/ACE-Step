@@ -202,3 +202,11 @@ pipeline_ace_step_demo.py
 *.wav
 start.sh
 exps/*
+
+# OpenSpec
+openspec
+
+#windsurf
+.windsurf*
+
+usage.md
