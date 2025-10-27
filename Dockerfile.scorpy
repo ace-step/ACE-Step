@@ -1,0 +1,56 @@
+FROM nvidia/cuda:13.0.0-cudnn-runtime-ubuntu22.04
+
+# Prevent interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    python3.10-venv \
+    git \
+    wget \
+    curl \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and setup files
+COPY requirements.txt setup.py README.md ./
+COPY acestep ./acestep
+COPY config ./config
+COPY examples ./examples
+
+# Create virtual environment and install dependencies
+RUN python3.10 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install PyTorch with CUDA 13.0 support (for RTX 5090)
+RUN pip install --no-cache-dir \
+    torch torchvision torchaudio \
+    --index-url https://download.pytorch.org/whl/nightly/cu130
+
+# Install torchcodec for audio encoding
+RUN pip install --no-cache-dir torchcodec
+
+# Install ACE-Step and dependencies
+RUN pip install --no-cache-dir -e .
+
+# Create directories for models and outputs
+RUN mkdir -p /app/checkpoints /app/outputs /app/logs
+
+# Set environment variables
+ENV ACE_OUTPUT_DIR=/app/outputs
+ENV PYTHONUNBUFFERED=1
+
+# Expose port
+EXPOSE 7866
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:7866/ || exit 1
+
+# Default command - can be overridden
+CMD ["acestep", "--server_name", "0.0.0.0", "--port", "7866", "--bf16", "true", "--torch_compile", "false"]

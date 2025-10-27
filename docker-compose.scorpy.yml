@@ -1,0 +1,69 @@
+services:
+  ace-step:
+    build:
+      context: .
+      dockerfile: Dockerfile.scorpy
+    image: ace-step:latest
+    container_name: ace-step-server
+    hostname: ace-step
+    restart: unless-stopped
+
+    # GPU support - requires nvidia-container-toolkit
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    # Port mapping
+    ports:
+      - "7866:7866"
+
+    # Volume mounts
+    volumes:
+      # Model checkpoints (persistent)
+      - ./checkpoints:/app/checkpoints
+      # Output audio files
+      - ./outputs:/app/outputs
+      # Logs
+      - ./logs:/app/logs
+      # Optional: Cache directory for auto-downloaded models
+      - ace-step-cache:/root/.cache/ace-step
+
+    # Environment variables
+    environment:
+      - ACE_OUTPUT_DIR=/app/outputs
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+    # Command with optimized settings for RTX 5090
+    command: >
+      acestep
+      --server_name 0.0.0.0
+      --port 7866
+      --bf16 true
+      --torch_compile false
+      --cpu_offload true
+      --overlapped_decode true
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7866/"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Named volumes
+volumes:
+  ace-step-cache:
+    driver: local

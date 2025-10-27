@@ -1,0 +1,43 @@
+#!/bin/bash
+# ACE-Step Docker Quick Launcher
+# Usage: ./ace-docker [start|stop|status|logs|rebuild]
+
+cd "$(dirname "$0")"
+
+case "${1:-start}" in
+    start|up)
+        echo "🚀 Starting ACE-Step..."
+        ./docker-manage.sh start
+        ;;
+    stop|down)
+        echo "⏹️  Stopping ACE-Step..."
+        ./docker-manage.sh stop
+        ;;
+    status)
+        ./docker-manage.sh status
+        ;;
+    logs)
+        ./docker-manage.sh logs
+        ;;
+    restart)
+        ./docker-manage.sh restart
+        ;;
+    rebuild)
+        ./docker-manage.sh rebuild
+        ;;
+    *)
+        echo "ACE-Step Docker Quick Launcher"
+        echo ""
+        echo "Usage: ./ace-docker [command]"
+        echo ""
+        echo "Commands:"
+        echo "  start    - Start ACE-Step (default)"
+        echo "  stop     - Stop ACE-Step"
+        echo "  status   - Check status"
+        echo "  logs     - View logs"
+        echo "  restart  - Restart"
+        echo "  rebuild  - Full rebuild"
+        echo ""
+        echo "Access at: http://localhost:7866"
+        ;;
+esac
