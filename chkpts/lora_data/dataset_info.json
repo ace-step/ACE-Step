@@ -1,0 +1,26 @@
+{
+  "total_samples": 50,
+  "original_samples": 357,
+  "tokenizer_vocab_size": 2000,
+  "special_tokens": {
+    "pad_token_id": 0,
+    "unk_token_id": 1,
+    "bos_token_id": 2,
+    "eos_token_id": 3,
+    "sep_token_id": 4,
+    "cls_token_id": 5,
+    "mask_token_id": 6,
+    "music_token_id": 7,
+    "lyric_token_id": 8,
+    "chorus_token_id": 9,
+    "verse_token_id": 10,
+    "bridge_token_id": 11,
+    "intro_token_id": 12,
+    "outro_token_id": 13,
+    "instrumental_token_id": 14
+  },
+  "audio_codebooks": 8,
+  "sample_rate": 16000,
+  "success_rate": "50/50",
+  "note": "Using dummy audio tokens for testing - replace with real EnCodec tokens for training"
+}

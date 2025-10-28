@@ -41,21 +41,24 @@ class AceStyleTamilTokenizer:
         self._init_special_tokens()
 
     def _init_special_tokens(self):
-        self.pad_token_id = 0
-        self.unk_token_id = 1
-        self.bos_token_id = 2
-        self.eos_token_id = 3
-        self.sep_token_id = 4
-        self.cls_token_id = 5
-        self.mask_token_id = 6
-        self.music_token_id = 7
-        self.lyric_token_id = 8
-        self.chorus_token_id = 9
-        self.verse_token_id = 10
-        self.bridge_token_id = 11
-        self.intro_token_id = 12
-        self.outro_token_id = 13
-        self.instrumental_token_id = 14
+        self.pad_token_id = None
+        self.unk_token_id = None
+        self.bos_token_id = None
+        self.eos_token_id = None
+        self.sep_token_id = None
+        self.cls_token_id = None
+        self.mask_token_id = None
+        self.music_token_id = None
+
+        self.lyric_token_id = None
+        self.chorus_token_id = None
+        self.verse_token_id = None
+        self.bridge_token_id = None
+        self.intro_token_id = None
+        self.outro_token_id = None
+        self.instrumental_token_id = None
+
+       
 
     def load_model(self, model_path: str):
         self.sp_model = spm.SentencePieceProcessor()
@@ -67,28 +70,75 @@ class AceStyleTamilTokenizer:
         self.vocab = {i: self.sp_model.id_to_piece(i) for i in range(self.vocab_size)}
         self.inverse_vocab = {v: k for k, v in self.vocab.items()}
         
+        self._map_special_token_ids()
+
         print(f"✅ Loaded tokenizer with vocab size: {self.vocab_size}")
     
+    def _map_special_token_ids(self):
+        """Map special tokens to their actual SentencePiece IDs"""
+        try:
+            self.pad_token_id = self.sp_model.pad_id()
+            self.unk_token_id = self.sp_model.unk_id() 
+            self.bos_token_id = self.sp_model.bos_id()
+            self.eos_token_id = self.sp_model.eos_id()
+            
+            # Map custom special tokens
+            self.sep_token_id = self._get_token_id(self.SPECIAL_TOKENS['sep_token'])
+            self.cls_token_id = self._get_token_id(self.SPECIAL_TOKENS['cls_token'])
+            self.mask_token_id = self._get_token_id(self.SPECIAL_TOKENS['mask_token'])
+            self.music_token_id = self._get_token_id(self.SPECIAL_TOKENS['music_token'])
+            self.lyric_token_id = self._get_token_id(self.SPECIAL_TOKENS['lyric_token'])
+            self.chorus_token_id = self._get_token_id(self.SPECIAL_TOKENS['chorus_token'])
+            self.verse_token_id = self._get_token_id(self.SPECIAL_TOKENS['verse_token'])
+            self.bridge_token_id = self._get_token_id(self.SPECIAL_TOKENS['bridge_token'])
+            self.intro_token_id = self._get_token_id(self.SPECIAL_TOKENS['intro_token'])
+            self.outro_token_id = self._get_token_id(self.SPECIAL_TOKENS['outro_token'])
+            self.instrumental_token_id = self._get_token_id(self.SPECIAL_TOKENS['instrumental_token'])
+            
+        except Exception as e:
+            print(f"⚠️ Warning: Could not map all special tokens: {e}")
+            # Fallback to manual lookup
+            self._fallback_special_token_mapping()
+
+    def _get_token_id(self, token: str) -> int:
+        """Get token ID safely"""
+        try:
+            return self.sp_model.piece_to_id(token)
+        except:
+            # If token doesn't exist, return unk token ID
+            return self.unk_token_id
+
+    def _fallback_special_token_mapping(self):
+        """Fallback method for special token mapping"""
+        special_token_map = {}
+        for name, token in self.SPECIAL_TOKENS.items():
+            token_id = self.sp_model.piece_to_id(token)
+            if token_id != self.unk_token_id:
+                setattr(self, f"{name.split('_')[0]}_token_id", token_id)
+                special_token_map[name] = token_id
+            else:
+                print(f"⚠️ Warning: {token} not found in vocabulary")
+                setattr(self, f"{name.split('_')[0]}_token_id", self.unk_token_id)
+
     def train_tokenizer(self, corpus_file: str, model_prefix: str, vocab_size: int = 8000, model_type: str = 'bpe'):
         model_dir =os.path.dirname(model_prefix)
         os.makedirs(model_dir, exist_ok=True)
 
-        train_args={
+        train_args = {
             'input': corpus_file,
             'model_prefix': model_prefix,
             'vocab_size': vocab_size,
             'model_type': model_type,
-            'character_coverage': 1.0,
-            'pad_id':self.pad_token_id,
-            'pad_piece':self.SPECIAL_TOKENS['pad_token'],
-            'unk_id':self.unk_token_id,
-            'unk_piece':self.SPECIAL_TOKENS['unk_token'],
-            'bos_id':self.bos_token_id,
-            'bos_piece':self.SPECIAL_TOKENS['bos_token'],
-            'eos_id':self.eos_token_id,
-            'eos_piece':self.SPECIAL_TOKENS['eos_token'],
-
-            'user_defined_symbols':[
+            'character_coverage': 0.9995,  # Reduced for Tamil optimization
+            'pad_id': 0,  # Let SentencePiece handle this
+            'pad_piece': self.SPECIAL_TOKENS['pad_token'],
+            'unk_id': 1,  # Let SentencePiece handle this  
+            'unk_piece': self.SPECIAL_TOKENS['unk_token'],
+            'bos_id': 2,  # Let SentencePiece handle this
+            'bos_piece': self.SPECIAL_TOKENS['bos_token'],
+            'eos_id': 3,  # Let SentencePiece handle this
+            'eos_piece': self.SPECIAL_TOKENS['eos_token'],
+            'user_defined_symbols': [
                 self.SPECIAL_TOKENS['sep_token'],   
                 self.SPECIAL_TOKENS['cls_token'],
                 self.SPECIAL_TOKENS['mask_token'],
@@ -103,19 +153,19 @@ class AceStyleTamilTokenizer:
             ],
             'split_by_unicode_script': True,
             'split_by_whitespace': True,
-            'split_by_number': True,
+            'split_by_number': False,  # Changed: Tamil doesn't use spaces in numbers
             'treat_whitespace_as_suffix': False,
             'byte_fallback': True,
             'remove_extra_whitespaces': True,
             'add_dummy_prefix': True,
-            # Training parameters
             'num_threads': os.cpu_count(),
             'max_sentence_length': 16384,
             'shuffle_input_sentence': True,
-            'seed_sentencepiece_size': 1000000,
-            'training_size': 10000000
-
+            # Tamil-specific optimizations
+            'split_digits': False,  # Tamil often combines numbers with text
+            'allow_whitespace_only_pieces': False,
         }
+
         print("Training tokenizer with the following args:")
         for k, v in train_args.items():
             print(f"  {k}: {v}")
@@ -129,7 +179,26 @@ class AceStyleTamilTokenizer:
 
         print(f"✅ Tokenizer trained and saved at: {model_path}")
         return model_path
-    
+    def get_special_tokens_dict(self) -> Dict[str, int]:
+        """Get dictionary of all special tokens for model configuration"""
+        return {
+            'pad_token_id': self.pad_token_id,
+            'unk_token_id': self.unk_token_id,
+            'bos_token_id': self.bos_token_id,
+            'eos_token_id': self.eos_token_id,
+            'sep_token_id': self.sep_token_id,
+            'cls_token_id': self.cls_token_id,
+            'mask_token_id': self.mask_token_id,
+            'music_token_id': self.music_token_id,
+            'lyric_token_id': self.lyric_token_id,
+            'chorus_token_id': self.chorus_token_id,
+            'verse_token_id': self.verse_token_id,
+            'bridge_token_id': self.bridge_token_id,
+            'intro_token_id': self.intro_token_id,
+            'outro_token_id': self.outro_token_id,
+            'instrumental_token_id': self.instrumental_token_id,
+        }
+
         
     def encode(self, text: str,add_special_tokens: bool =True , max_length:Optional[int] =None ,truncation: bool =True)-> List[int]:
         if not self.sp_model:
@@ -284,3 +353,7 @@ class AceTamilTokenizer:
     @property
     def vocab_size(self):
         return self.tokenizer.vocab_size
+    
+    
+    def get_special_tokens_dict(self):
+        return self.tokenizer.get_special_tokens_dict()

@@ -24,4 +24,11 @@ click
 peft
 tensorboard
 tensorboardX
+
+#updated requirements
 pandas
+sentencepiece
+encodec
+torchcodec
+
+
