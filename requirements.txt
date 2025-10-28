@@ -30,5 +30,7 @@ pandas
 sentencepiece
 encodec
 torchcodec
+ffmpeg
 
-
+#If you need to install specific versions of torch, torchvision, and torchaudio for CPU-only usage, uncomment the line below:
+#pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cpu

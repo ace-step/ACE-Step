@@ -1,8 +1,16 @@
+
 {
-  "r": 8,
-  "alpha": 32,
-  "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "down_proj", "up_proj"],
-  "dropout": 0.1,
+  "r": 16,
+  "lora_alpha": 32,
+  "lora_dropout": 0.1,
   "bias": "none",
+  "target_modules": [
+    "to_q",
+    "to_k", 
+    "to_v",
+    "to_out.0",
+    "ff.net.0",
+    "ff.net.2"
+  ],
   "task_type": "SEQ_2_SEQ_LM"
 }
