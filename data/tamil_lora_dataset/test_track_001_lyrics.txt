@@ -1,0 +1,66 @@
+[Intro]
+"System booting... 语言 模型 loading..."
+
+[Verse 1]
+硅谷 那个 coder 调试 neural network
+北京 的 极客 训练 A I 写 report
+不同 架构 的 chip 不同 算法 的 war
+屏幕上 跑的 全是 machine learning (learning)
+
+[Bridge]
+多少年 我们 chase 摩尔 定律 的 trend (yeah)
+这两年 换他们 study 中文 N L P
+Convolution L S T M
+好烧脑 的 backprop 好暴力 的 big data
+
+[Verse 2]
+Python 强 say加加 刚 Python 调用 C++ 的 A P I
+say加加 嫌 Python 太 slow Python 笑 C++ 太 hardcore
+L L V M 默默 generate 中间 code
+到底 interpreter 还是 compiler 屌？
+
+[Verse 3]
+P M 和 engineer
+白板 画满 flow chart 服务器 闪着 red light
+P M 说 add feature engineer 说 no way
+需求 变更 code 重构
+不知 是 P M 太 fly 还是 deadline 太 high
+
+[Chorus]
+全世界 都在 train neural network
+Transformer 的 paper 越来越 难 go through
+全世界 都在 tune 超参数
+我们 写的 bug 让 G P U 都 say no
+
+[Verse 4]
+柏林 hackathon demo blockchain contract
+上海 的 dev 用 federated learning 破 data wall
+各种 语言 的 error 各种 框架 的 doc
+terminal 里 滚的 全是 dependency 冲突
+
+[Bridge]
+曾以为 English 才是 coding 的 language (yeah)
+直到见 G P T 用 文言文 generate 正则 expression
+Gradient explode
+好硬核 的 prompt 好头秃 的 debug road
+
+[Verse 5]
+有个 bug 叫 quantum
+测试 环境 run perfect 上线 立即就 crash
+查 log 看 monitor 发现是 thread 不同步
+改 sync 加 lock 慢 deadlock 更难办
+量子 computer 也解不开 这 chaos chain
+
+[Verse 6]
+你说 996 我说 007
+你说 福报 我说 burnout
+Product 要 agile Boss 要 KPI
+Code 要 elegant deadline 是 tomorrow
+不如 直接 script 自动 submit 离职信
+
+[Outro]
+"Warning: 内存 leak...core dumping..."
+全世界 都在 train neural network (neural network)
+Loss 还没 converge 天已经亮
+全世界 都在 tune 超参数
+我们 写的 code (让它) 让 world (reboot) 都 reboot 无效

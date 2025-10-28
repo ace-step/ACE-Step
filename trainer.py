@@ -32,7 +32,6 @@ matplotlib.use("Agg")
 torch.backends.cudnn.benchmark = False
 torch.set_float32_matmul_precision("high")
 
-
 class Pipeline(LightningModule):
     def __init__(
         self,
@@ -816,8 +815,32 @@ class Pipeline(LightningModule):
                 f.write(key_prompt_lyric)
             i += 1
 
+        
+    def setup(self ,stage=None):
+        device = self.device if hasattr(self,"device") else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.transformers.to(device)
+        self.dcae.to(device)
+        self.text_encoder_model.to(device)
+
+        try:
+            self.transformers.enable_gradient_checkpointing()
+        except Exception as e:
+            print("Error in enabling gradient checkpointing for transformers : " , e)
+            pass
+            
+        if hasattr(self,"adapter_name") and self.adapter_name is not None:
+            try:
+
+                self.transformers.set_adapter(self.adapter_name)
+                for n,p in self.transformers.named_parameters():
+                    if p.requires_grad:
+                        p.require_grad = getattr(p,'requires_grad',False)
+                        print(f"Adapter Training - {n} : {p.shape}")
+            except Exception as e:
+                logger.warning(f"Could not add adapter in setup(): {e}")
 
 def main(args):
+
     model = Pipeline(
         learning_rate=args.learning_rate,
         num_workers=args.num_workers,
@@ -861,7 +884,6 @@ def main(args):
         model,
         ckpt_path=args.ckpt_path,
     )
-
 
 if __name__ == "__main__":
     args = argparse.ArgumentParser()

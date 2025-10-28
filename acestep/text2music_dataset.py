@@ -56,8 +56,10 @@ SUPPORT_LANGUAGES = {
     "ja": 5412,
     "hu": 5753,
     "ko": 6152,
-    "hi": 6680,
+    
 }
+
+SUPPORT_LANGUAGES ['ta']=7000
 
 # Regex pattern for structure markers like [Verse], [Chorus], etc.
 structure_pattern = re.compile(r"\[.*?\]")
@@ -469,6 +471,7 @@ class Text2MusicDataset(Dataset):
         random.shuffle(prompt)
         prompt = ", ".join(prompt)
 
+
         # Handle recaption data if available
         recaption = item.get("recaption", {})
         valid_recaption = []
@@ -694,3 +697,4 @@ if __name__ == "__main__":
             print(v.shape, v.min(), v.max())
         else:
             print(k, v)
+

@@ -1,0 +1,8 @@
+{
+  "r": 8,
+  "alpha": 32,
+  "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "down_proj", "up_proj"],
+  "dropout": 0.1,
+  "bias": "none",
+  "task_type": "SEQ_2_SEQ_LM"
+}
