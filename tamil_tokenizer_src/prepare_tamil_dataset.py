@@ -345,7 +345,9 @@ class TamilDatasetPreparer:
                 if os.path.exists(full_path):
                     # Try to load the audio file to verify it's valid
                     try:
+                        print('full path : ',full_path)
                         audio, sr = torchaudio.load(full_path)
+                        
                         if audio.numel() > 0:  # Check if audio has data
                             valid_files += 1
                         else:
@@ -354,6 +356,7 @@ class TamilDatasetPreparer:
                     except Exception as e:
                         print(f"❌ Corrupted audio file: {os.path.basename(full_path)} - {e}")
                         invalid_files += 1
+                        return None
                 else:
                     print(f"❌ Missing audio file: {full_path}")
                     invalid_files += 1
@@ -384,6 +387,7 @@ class TamilDatasetPreparer:
         # Step 3: Copy audio files
         audio_files_copied = self.copy_audio_files(df)
         
+        return None
         # Step 4: Create speaker embeddings
         speaker_file = self.create_speaker_embeddings()
         

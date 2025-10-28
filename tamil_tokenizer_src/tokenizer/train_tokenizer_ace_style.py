@@ -82,6 +82,7 @@ class AceTokenizerTrainer:
                 if col in row and pd.notna(row[col]):
                     lyric_content = str(row[col])
                     # Check if it's a file path
+                
                     if os.path.exists(os.path.join(self.audio_dir, lyric_content)):
                         lyric_text = self.load_lyrics(os.path.join(self.audio_dir, lyric_content))
                     else:
