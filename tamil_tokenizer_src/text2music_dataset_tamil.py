@@ -1,3 +1,4 @@
+# text2music_dataset_tamil.py
 import torch
 import numpy as np
 import random
@@ -13,32 +14,22 @@ from acestep.language_segmentation import LangSegment
 from acestep.models.lyrics_utils.lyric_tokenizer import VoiceBpeTokenizer
 import warnings
 
+# Import your Tamil tokenizer
+from tokenizer.tamil_tokenizer_ace import AceStyleTamilTokenizer
+
 warnings.simplefilter("ignore", category=FutureWarning)
 
 DEFAULT_TRAIN_PATH = "./data/example_dataset"
 
-
 def is_silent_audio(audio_tensor, silence_threshold=0.95):
     """
     Determine if an audio is silent and should be discarded
-
-    Args:
-        audio_tensor: torch.Tensor from torchaudio, shape (num_channels, num_samples)
-        silence_threshold: Silence threshold ratio, default 0.95 means 95%
-
-    Returns:
-        bool: True if audio should be discarded, False if it should be kept
     """
-    # Check if each sample point is zero across all channels
     silent_samples = torch.all(audio_tensor == 0, dim=0)
-
-    # Calculate silence ratio
     silent_ratio = torch.mean(silent_samples.float()).item()
-
     return silent_ratio > silence_threshold
 
-
-# Supported languages for tokenization
+# Enhanced supported languages with Tamil
 SUPPORT_LANGUAGES = {
     "en": 259,
     "de": 260,
@@ -56,18 +47,15 @@ SUPPORT_LANGUAGES = {
     "ja": 5412,
     "hu": 5753,
     "ko": 6152,
-    
+    "ta": 7000,  # Tamil
 }
 
-SUPPORT_LANGUAGES ['ta']=7000
-
-# Regex pattern for structure markers like [Verse], [Chorus], etc.
 structure_pattern = re.compile(r"\[.*?\]")
+tamil_pattern = re.compile(r'[\u0B80-\u0BFF]')  # Tamil Unicode range
 
-
-class Text2MusicDataset(Dataset):
+class Text2MusicTamilDataset(Dataset):
     """
-    Dataset for text-to-music generation that processes lyrics and audio files
+    Enhanced Dataset for text-to-music generation with Tamil support
     """
 
     def __init__(
@@ -78,128 +66,42 @@ class Text2MusicDataset(Dataset):
         sample_size=None,
         shuffle=True,
         minibatch_size=1,
+        tamil_tokenizer_path="chkpts/tokenizer_ace",  # Add Tamil tokenizer path
+        use_tamil=True,  # Enable Tamil processing
     ):
         """
-        Initialize the Text2Music dataset
-
-        Args:
-            train: Whether this is a training dataset
-            train_dataset_path: Path to the dataset
-            max_duration: Maximum audio duration in seconds
-            sample_size: Optional limit on number of samples to use
-            shuffle: Whether to shuffle the dataset
-            minibatch_size: Size of mini-batches
+        Initialize the Text2Music dataset with Tamil support
         """
         self.train_dataset_path = train_dataset_path
         self.max_duration = max_duration
         self.minibatch_size = minibatch_size
         self.train = train
+        self.use_tamil = use_tamil
+
+        # Initialize Tamil tokenizer
+        self.tamil_tokenizer = None
+        if self.use_tamil:
+            try:
+                self.tamil_tokenizer = AceStyleTamilTokenizer.from_pretrained(tamil_tokenizer_path)
+                print(f"✅ Tamil tokenizer loaded with vocab size: {self.tamil_tokenizer.vocab_size}")
+            except Exception as e:
+                print(f"❌ Failed to load Tamil tokenizer: {e}")
+                self.tamil_tokenizer = None
 
         # Initialize language segmentation
         self.lang_segment = LangSegment()
-        self.lang_segment.setfilters(
-            [
-                "af",
-                "am",
-                "an",
-                "ar",
-                "as",
-                "az",
-                "be",
-                "bg",
-                "bn",
-                "br",
-                "bs",
-                "ca",
-                "cs",
-                "cy",
-                "da",
-                "de",
-                "dz",
-                "el",
-                "en",
-                "eo",
-                "es",
-                "et",
-                "eu",
-                "fa",
-                "fi",
-                "fo",
-                "fr",
-                "ga",
-                "gl",
-                "gu",
-                "he",
-                "hi",
-                "hr",
-                "ht",
-                "hu",
-                "hy",
-                "id",
-                "is",
-                "it",
-                "ja",
-                "jv",
-                "ka",
-                "kk",
-                "km",
-                "kn",
-                "ko",
-                "ku",
-                "ky",
-                "la",
-                "lb",
-                "lo",
-                "lt",
-                "lv",
-                "mg",
-                "mk",
-                "ml",
-                "mn",
-                "mr",
-                "ms",
-                "mt",
-                "nb",
-                "ne",
-                "nl",
-                "nn",
-                "no",
-                "oc",
-                "or",
-                "pa",
-                "pl",
-                "ps",
-                "pt",
-                "qu",
-                "ro",
-                "ru",
-                "rw",
-                "se",
-                "si",
-                "sk",
-                "sl",
-                "sq",
-                "sr",
-                "sv",
-                "sw",
-                "ta",
-                "te",
-                "th",
-                "tl",
-                "tr",
-                "ug",
-                "uk",
-                "ur",
-                "vi",
-                "vo",
-                "wa",
-                "xh",
-                "zh",
-                "zu",
-            ]
-        )
+        self.lang_segment.setfilters([
+            "af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", "bs", "ca", 
+            "cs", "cy", "da", "de", "dz", "el", "en", "eo", "es", "et", "eu", "fa", 
+            "fi", "fo", "fr", "ga", "gl", "gu", "he", "hi", "hr", "ht", "hu", "hy", 
+            "id", "is", "it", "ja", "jv", "ka", "kk", "km", "kn", "ko", "ku", "ky", 
+            "la", "lb", "lo", "lt", "lv", "mg", "mk", "ml", "mn", "mr", "ms", "mt", 
+            "nb", "ne", "nl", "nn", "no", "oc", "or", "pa", "pl", "ps", "pt", "qu", 
+            "ro", "ru", "rw", "se", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta",  # Added Tamil
+            "te", "th", "tl", "tr", "ug", "uk", "ur", "vi", "vo", "wa", "xh", "zh", "zu",
+        ])
 
-        # Initialize lyric tokenizer
+        # Initialize original lyric tokenizer (for fallback)
         self.lyric_tokenizer = VoiceBpeTokenizer()
 
         # Load dataset
@@ -209,11 +111,6 @@ class Text2MusicDataset(Dataset):
     def setup_full(self, train=True, shuffle=True, sample_size=None):
         """
         Load and prepare the dataset
-
-        Args:
-            train: Whether this is a training dataset
-            shuffle: Whether to shuffle the dataset
-            sample_size: Optional limit on number of samples to use
         """
         pretrain_ds = load_from_disk(self.train_dataset_path)
 
@@ -230,40 +127,61 @@ class Text2MusicDataset(Dataset):
         else:
             return self.total_samples // self.minibatch_size + 1
 
+    def is_tamil_text(self, text):
+        """
+        Detect if text contains Tamil characters
+        """
+        return bool(tamil_pattern.search(text))
+
     def get_lang(self, text):
         """
-        Detect the language of a text
-
-        Args:
-            text: Input text
-
-        Returns:
-            tuple: (primary_language, language_segments, language_counts)
+        Detect the language of a text with Tamil enhancement
         """
+        # First check if it's Tamil
+        if self.is_tamil_text(text):
+            return "ta", [], [["ta", 1.0]]
+        
+        # Fall back to original detection
         language = "en"
         langs = []
         try:
             langs = self.lang_segment.getTexts(text)
             langCounts = self.lang_segment.getCounts()
-            language = langCounts[0][0]
-            # If primary language is English but there's another language, use the second one
-            if len(langCounts) > 1 and language == "en":
-                language = langCounts[1][0]
+            if langCounts:
+                language = langCounts[0][0]
+                if len(langCounts) > 1 and language == "en":
+                    language = langCounts[1][0]
         except Exception:
             language = "en"
         return language, langs, langCounts
 
-    def tokenize_lyrics(self, lyrics, debug=False, key=None):
+    def tokenize_lyrics_tamil(self, lyrics, debug=False):
         """
-        Tokenize lyrics into token indices
+        Tokenize Tamil lyrics using custom Tamil tokenizer
+        """
+        if not lyrics or not lyrics.strip():
+            return [self.tamil_tokenizer.pad_token_id] if self.tamil_tokenizer else [0]
 
-        Args:
-            lyrics: Lyrics text
-            debug: Whether to print debug information
-            key: Optional key identifier
+        try:
+            # Tokenize with Tamil tokenizer
+            tokens = self.tamil_tokenizer.encode(lyrics, add_special_tokens=False)
+            
+            if debug:
+                decoded = self.tamil_tokenizer.decode(tokens)
+                print(f"🔤 Tamil tokenization debug:")
+                print(f"   Original: {lyrics}")
+                print(f"   Tokens: {tokens}")
+                print(f"   Decoded: {decoded}")
+            
+            return tokens
+            
+        except Exception as e:
+            print(f"❌ Tamil tokenization failed: {e}")
+            return [self.tamil_tokenizer.pad_token_id] if self.tamil_tokenizer else [0]
 
-        Returns:
-            list: Token indices
+    def tokenize_lyrics_original(self, lyrics, debug=False, key=None):
+        """
+        Original lyric tokenization (for non-Tamil text)
         """
         lines = lyrics.split("\n")
         lyric_token_idx = [261]  # Start token
@@ -273,7 +191,7 @@ class Text2MusicDataset(Dataset):
 
         # Determine most common language
         most_common_lang = "en"
-        if len(lang_counter) > 0:
+        if lang_counter and len(lang_counter) > 0:
             most_common_lang = lang_counter[0][0]
             if most_common_lang == "":
                 most_common_lang = "en"
@@ -306,7 +224,6 @@ class Text2MusicDataset(Dataset):
                     if structure_pattern.match(line):
                         token_idx = self.lyric_tokenizer.encode(line, "en")
                     else:
-                        # Try tokenizing with most common language first
                         token_idx = self.lyric_tokenizer.encode(line, most_common_lang)
 
                         # If debug mode, show tokenization results
@@ -338,18 +255,26 @@ class Text2MusicDataset(Dataset):
 
         return lyric_token_idx
 
+    def tokenize_lyrics(self, lyrics, debug=False, key=None):
+        """
+        Unified lyric tokenization with Tamil support
+        """
+        if not lyrics or not lyrics.strip():
+            return [0]
+
+        # Auto-detect Tamil or use Tamil tokenizer if available
+        if self.use_tamil and self.tamil_tokenizer and self.is_tamil_text(lyrics):
+            print(f"🎵 Using Tamil tokenizer for lyrics: {lyrics[:50]}...")
+            return self.tokenize_lyrics_tamil(lyrics, debug)
+        else:
+            # Use original tokenization for non-Tamil text
+            return self.tokenize_lyrics_original(lyrics, debug, key)
+
     def tokenize_lyrics_map(self, item, debug=False):
         """
-        Process and tokenize lyrics in a dataset item
-
-        Args:
-            item: Dataset item containing lyrics
-            debug: Whether to print debug information
-
-        Returns:
-            dict: Updated item with tokenized lyrics
+        Process and tokenize lyrics in a dataset item with Tamil support
         """
-        norm_lyrics = item["norm_lyrics"]
+        norm_lyrics = item.get("norm_lyrics", "")
 
         # Filter out prompts that match pattern "write a .* song that genre is"
         pattern = r"write a .* song that genre is"
@@ -359,26 +284,20 @@ class Text2MusicDataset(Dataset):
             item["norm_lyrics"] = norm_lyrics
             return item
 
-        key = item["keys"]
+        key = item.get("keys", "unknown")
 
         # Handle empty lyrics
-        if not item["norm_lyrics"].strip():
+        if not norm_lyrics.strip():
             item["lyric_token_idx"] = [0]
             return item
 
-        # Tokenize lyrics
+        # Tokenize lyrics with Tamil support
         item["lyric_token_idx"] = self.tokenize_lyrics(norm_lyrics, debug, key)
         return item
 
     def get_speaker_emb_file(self, speaker_emb_path):
         """
         Load speaker embedding file
-
-        Args:
-            speaker_emb_path: Path to speaker embedding file
-
-        Returns:
-            torch.Tensor or None: Speaker embedding
         """
         data = None
         try:
@@ -390,12 +309,6 @@ class Text2MusicDataset(Dataset):
     def get_audio(self, item):
         """
         Load and preprocess audio file
-
-        Args:
-            item: Dataset item containing filename
-
-        Returns:
-            torch.Tensor or None: Processed audio tensor
         """
         filename = item["filename"]
         sr = 48000
@@ -438,13 +351,7 @@ class Text2MusicDataset(Dataset):
 
     def process(self, item):
         """
-        Process a dataset item into model-ready features
-
-        Args:
-            item: Dataset item
-
-        Returns:
-            list: List of processed examples
+        Process a dataset item into model-ready features with Tamil support
         """
         # Get audio
         audio = self.get_audio(item)
@@ -456,21 +363,22 @@ class Text2MusicDataset(Dataset):
         # Get speaker embedding
         key = item["keys"]
         speaker_emb_path = item.get("speaker_emb_path")
-        if not speaker_emb_path:
+        speaker_emb = None
+        
+        if speaker_emb_path:
             speaker_emb = self.get_speaker_emb_file(speaker_emb_path)
 
         if speaker_emb is None:
             speaker_emb = torch.zeros(512)
 
         # Process prompt/tags
-        prompt = item["tags"]
+        prompt = item.get("tags", [])
         if len(prompt) == 0:
             prompt = ["music"]
 
         # Shuffle tags and join with commas
         random.shuffle(prompt)
         prompt = ", ".join(prompt)
-
 
         # Handle recaption data if available
         recaption = item.get("recaption", {})
@@ -484,7 +392,7 @@ class Text2MusicDataset(Dataset):
         prompt = random.choice(valid_recaption)
         prompt = prompt[:256]  # Limit prompt length
 
-        # Process lyrics
+        # Process lyrics with Tamil support
         lyric_token_idx = item["lyric_token_idx"]
         lyric_token_idx = torch.tensor(lyric_token_idx).long()
         lyric_token_idx = lyric_token_idx[:4096]  # Limit lyric context length
@@ -492,7 +400,7 @@ class Text2MusicDataset(Dataset):
 
         # Create lyric chunks for display
         candidate_lyric_chunk = []
-        lyrics = item["norm_lyrics"]
+        lyrics = item.get("norm_lyrics", "")
         lyrics_lines = lyrics.split("\n")
         for lyric_line in lyrics_lines:
             candidate_lyric_chunk.append(
@@ -525,12 +433,6 @@ class Text2MusicDataset(Dataset):
     def get_full_features(self, idx):
         """
         Get full features for a dataset index
-
-        Args:
-            idx: Dataset index
-
-        Returns:
-            dict: Dictionary of features
         """
         examples = {
             "keys": [],
@@ -572,12 +474,6 @@ class Text2MusicDataset(Dataset):
     def pack_batch(self, batch):
         """
         Pack a batch of examples
-
-        Args:
-            batch: List of examples
-
-        Returns:
-            dict: Packed batch
         """
         packed_batch = {}
         for item in batch:
@@ -591,12 +487,6 @@ class Text2MusicDataset(Dataset):
     def collate_fn(self, batch):
         """
         Collate function for DataLoader
-
-        Args:
-            batch: List of examples
-
-        Returns:
-            dict: Collated batch with padded tensors
         """
         batch = self.pack_batch(batch)
         output = {}
@@ -656,12 +546,6 @@ class Text2MusicDataset(Dataset):
     def __getitem__(self, idx):
         """
         Get item at index with error handling
-
-        Args:
-            idx: Dataset index
-
-        Returns:
-            dict: Example features
         """
         try:
             example = self.get_full_features(idx)
@@ -676,9 +560,16 @@ class Text2MusicDataset(Dataset):
             return self.__getitem__(new_idx)
 
 
+# Backward compatibility alias
+Text2MusicDataset = Text2MusicTamilDataset
+
 if __name__ == "__main__":
-    # Example usage
-    dataset = Text2MusicDataset()
+    # Example usage with Tamil
+    dataset = Text2MusicTamilDataset(
+        train_dataset_path="./tamil_dataset",  # Your Tamil dataset path
+        use_tamil=True,
+        tamil_tokenizer_path="chkpts/tokenizer_ace"
+    )
     print(f"Dataset size: {len(dataset)}")
     item = dataset[0]
     print(item)
@@ -688,13 +579,3 @@ if __name__ == "__main__":
             print(k, [v[i].shape for i in range(len(v))])
         else:
             print(k, v)
-
-    item2 = dataset[1]
-    batch = dataset.collate_fn([item, item2])
-    for k, v in batch.items():
-        if isinstance(v, torch.Tensor):
-            print(k, end=" ")
-            print(v.shape, v.min(), v.max())
-        else:
-            print(k, v)
-

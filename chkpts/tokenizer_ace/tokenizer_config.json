@@ -1,0 +1,21 @@
+{
+  "vocab_size": 2000,
+  "special_tokens": {
+    "pad_token": "[PAD]",
+    "unk_token": "[UNK]",
+    "bos_token": "[BOS]",
+    "eos_token": "[EOS]",
+    "sep_token": "[SEP]",
+    "cls_token": "[CLS]",
+    "mask_token": "[MASK]",
+    "music_token": "[MUSIC]",
+    "lyric_token": "[LYRIC]",
+    "chorus_token": "[CHORUS]",
+    "verse_token": "[VERSE]",
+    "bridge_token": "[BRIDGE]",
+    "intro_token": "[INTRO]",
+    "outro_token": "[OUTRO]",
+    "instrumental_token": "[INSTRUMENTAL]"
+  },
+  "model_type": "sentencepiece"
+}

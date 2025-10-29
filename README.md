@@ -30,7 +30,16 @@ ACE-Step bridges this gap by integrating diffusion-based generation with Sana’
 Rather than building yet another end-to-end text-to-music pipeline, our vision is to establish a foundation model for music AI: a fast, general-purpose, efficient yet flexible architecture that makes it easy to train sub-tasks on top of it. This paves the way for developing powerful tools that seamlessly integrate into the creative workflows of music artists, producers, and content creators. In short, we aim to build the Stable Diffusion moment for music.
 
 
+
+
+
+
+
+
+
 ## 📢 News and Updates
+
+
 
 - 📃 2025.06.02: Released [ACE-Step Technical Report (PDF)](https://arxiv.org/abs/2506.00045).
 

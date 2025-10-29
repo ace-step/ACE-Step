@@ -142,6 +142,17 @@ ENV/
 env.bak/
 venv.bak/
 
+#Datasets
+datasets/
+*.csv
+*.mp3
+*.wav
+*_prompt.txt
+*lyrics.txt
+*(1).txt
+*lyric.txt
+*.zip
+
 # Spyder project settings
 .spyderproject
 .spyproject
