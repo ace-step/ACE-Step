@@ -10,6 +10,7 @@ pytorch_lightning==2.5.1
 soundfile==0.13.1
 torch
 torchaudio
+torchcodec
 torchvision
 tqdm
 transformers==4.50.0
