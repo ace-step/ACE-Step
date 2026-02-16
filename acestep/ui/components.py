@@ -134,7 +134,7 @@ def create_text2music_ui(
                 )
                 lora_weight = gr.Number(value=1.0, label="Lora weight", step=0.1, maximum=3, minimum=-3)
 
-            ref_audio_input = gr.Audio(type="filepath", label="Reference Audio (for Audio2Audio)", visible=False, elem_id="ref_audio_input", show_download_button=True)
+            ref_audio_input = gr.Audio(type="filepath", label="Reference Audio (for Audio2Audio)", visible=False, elem_id="ref_audio_input")
             ref_audio_strength = gr.Slider(
                 label="Refer audio strength",
                 minimum=0.0,
@@ -403,7 +403,7 @@ def create_text2music_ui(
                     type="filepath",
                     visible=False,
                     elem_id="repaint_source_audio_upload",
-                    show_download_button=True,
+
                 )
                 repaint_source.change(
                     fn=lambda x: gr.update(
@@ -572,7 +572,7 @@ def create_text2music_ui(
                     type="filepath",
                     visible=False,
                     elem_id="edit_source_audio_upload",
-                    show_download_button=True,
+
                 )
                 edit_source.change(
                     fn=lambda x: gr.update(
@@ -724,7 +724,7 @@ def create_text2music_ui(
                     type="filepath",
                     visible=False,
                     elem_id="extend_source_audio_upload",
-                    show_download_button=True,
+
                 )
                 extend_source.change(
                     fn=lambda x: gr.update(
