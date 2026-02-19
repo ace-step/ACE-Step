@@ -4,34 +4,6 @@ import os
 from acestep.pipeline_ace_step import ACEStepPipeline
 from acestep.data_sampler import DataSampler
 
-
-def sample_data(json_data):
-    return (
-        json_data["audio_duration"],
-        json_data["prompt"],
-        json_data["lyrics"],
-        json_data["infer_step"],
-        json_data["guidance_scale"],
-        json_data["scheduler_type"],
-        json_data["cfg_type"],
-        json_data["omega_scale"],
-        ", ".join(map(str, json_data["actual_seeds"])),
-        json_data["guidance_interval"],
-        json_data["guidance_interval_decay"],
-        json_data["min_guidance_scale"],
-        json_data["use_erg_tag"],
-        json_data["use_erg_lyric"],
-        json_data["use_erg_diffusion"],
-        ", ".join(map(str, json_data["oss_steps"])),
-        json_data["guidance_scale_text"] if "guidance_scale_text" in json_data else 0.0,
-        (
-            json_data["guidance_scale_lyric"]
-            if "guidance_scale_lyric" in json_data
-            else 0.0
-        ),
-    )
-
-
 @click.command()
 @click.option(
     "--checkpoint_path", type=str, default="", help="Path to the checkpoint directory"
@@ -63,51 +35,10 @@ def main(checkpoint_path, bf16, torch_compile, cpu_offload, overlapped_decode, d
     data_sampler = DataSampler()
 
     json_data = data_sampler.sample()
-    json_data = sample_data(json_data)
+
     print(json_data)
 
-    (
-        audio_duration,
-        prompt,
-        lyrics,
-        infer_step,
-        guidance_scale,
-        scheduler_type,
-        cfg_type,
-        omega_scale,
-        manual_seeds,
-        guidance_interval,
-        guidance_interval_decay,
-        min_guidance_scale,
-        use_erg_tag,
-        use_erg_lyric,
-        use_erg_diffusion,
-        oss_steps,
-        guidance_scale_text,
-        guidance_scale_lyric,
-    ) = json_data
-
-    model_demo(
-        audio_duration=audio_duration,
-        prompt=prompt,
-        lyrics=lyrics,
-        infer_step=infer_step,
-        guidance_scale=guidance_scale,
-        scheduler_type=scheduler_type,
-        cfg_type=cfg_type,
-        omega_scale=omega_scale,
-        manual_seeds=manual_seeds,
-        guidance_interval=guidance_interval,
-        guidance_interval_decay=guidance_interval_decay,
-        min_guidance_scale=min_guidance_scale,
-        use_erg_tag=use_erg_tag,
-        use_erg_lyric=use_erg_lyric,
-        use_erg_diffusion=use_erg_diffusion,
-        oss_steps=oss_steps,
-        guidance_scale_text=guidance_scale_text,
-        guidance_scale_lyric=guidance_scale_lyric,
-        save_path=output_path,
-    )
+    model_demo(save_path=output_path, **json_data)
 
 
 if __name__ == "__main__":
