@@ -5,10 +5,12 @@ import os
 from acestep.pipeline_ace_step import ACEStepPipeline
 from acestep.data_sampler import DataSampler
 import uuid
+import traceback
 
 app = FastAPI(title="ACEStep Pipeline API")
 
 class ACEStepInput(BaseModel):
+    format: str
     checkpoint_path: str
     bf16: bool = True
     torch_compile: bool = False
@@ -59,6 +61,7 @@ async def generate_audio(input_data: ACEStepInput):
 
         # Prepare parameters
         params = (
+            input_data.format,
             input_data.audio_duration,
             input_data.prompt,
             input_data.lyrics,
@@ -95,7 +98,7 @@ async def generate_audio(input_data: ACEStepInput):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating audio: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating audio: {str(e)}\n{traceback.format_exc()}")
 
 @app.get("/health")
 async def health_check():

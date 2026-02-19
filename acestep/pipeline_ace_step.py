@@ -82,7 +82,7 @@ structure_pattern = re.compile(r"\[.*?\]")
 
 def ensure_directory_exists(directory):
     directory = str(directory)
-    if not os.path.exists(directory):
+    if directory and not os.path.exists(directory):
         os.makedirs(directory)
 
 
