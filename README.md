@@ -7,7 +7,8 @@
     <a href="https://huggingface.co/spaces/ACE-Step/ACE-Step">Space Demo</a> |
     <a href="https://discord.gg/PeWDxrkdj7">Discord</a> |
     <a href="https://arxiv.org/abs/2506.00045">Technical Report</a> |
-    <a href="https://ace-step.github.io/ace-step-v1.5.github.io/">ACE-Step v1.5</a>
+    <a href="https://ace-step.github.io/ace-step-v1.5.github.io/">ACE-Step v1.5</a> |
+    <a href="https://cloud.swmgpu.com/w/samofvaani/ace-step-music">swm cloud</a>
 </p>
 
 <p align="center">
